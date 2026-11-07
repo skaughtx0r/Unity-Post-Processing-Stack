@@ -1159,7 +1159,12 @@ namespace UnityEngine.Rendering.PostProcessing
         /// <seealso cref="GetAllTypesDerivedFrom{T}"/>
         public static IEnumerable<Type> GetAllAssemblyTypes() {
             if(m_AssemblyTypes == null) {
+#if UNITY_6000_6_OR_NEWER
+                // Unity 6.6 rejects AppDomain.GetAssemblies (analyzer UAC0005: it can return unloaded assemblies).
+                m_AssemblyTypes = UnityEngine.Assemblies.CurrentAssemblies.GetLoadedAssemblies()
+#else
                 m_AssemblyTypes = AppDomain.CurrentDomain.GetAssemblies()
+#endif
                     .SelectMany(t => {
                         // Ugly hack to handle mis-versioned dlls
                         var innerTypes = new Type[0];
