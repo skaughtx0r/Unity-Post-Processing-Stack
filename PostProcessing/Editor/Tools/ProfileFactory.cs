@@ -15,7 +15,11 @@ namespace UnityEditor.Rendering.PostProcessing
         static void CreatePostProcessProfile()
         {
             //var icon = EditorGUIUtility.FindTexture("ScriptableObject Icon");
+#if UNITY_6000_6_OR_NEWER
+            ProjectWindowUtil.StartNameEditingIfProjectWindowExists(EntityId.None, ScriptableObject.CreateInstance<DoCreatePostProcessProfile>(), "New Post-processing Profile.asset", null, null);
+#else
             ProjectWindowUtil.StartNameEditingIfProjectWindowExists(0, ScriptableObject.CreateInstance<DoCreatePostProcessProfile>(), "New Post-processing Profile.asset", null, null);
+#endif
         }
 
         /// <summary>
@@ -71,9 +75,16 @@ namespace UnityEditor.Rendering.PostProcessing
         }
     }
 
+#if UNITY_6000_6_OR_NEWER
+    // Unity 6.6: EndNameEditAction is a compile error; AssetCreationEndAction passes an EntityId.
+    class DoCreatePostProcessProfile : AssetCreationEndAction
+    {
+        public override void Action(EntityId entityId, string pathName, string resourceFile)
+#else
     class DoCreatePostProcessProfile : EndNameEditAction
     {
         public override void Action(int instanceId, string pathName, string resourceFile)
+#endif
         {
             var profile = ProfileFactory.CreatePostProcessProfileAtPath(pathName);
             ProjectWindowUtil.ShowCreatedAsset(profile);
